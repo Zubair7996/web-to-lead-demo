@@ -36,7 +36,7 @@
     <h1>Contact sales</h1>
     <p class="progress" id="progress">Step 1 of 2</p>
 
-    <!-- SANDBOX endpoint (use production only when you go live) -->
+    <!-- SANDBOX endpoint -->
     <form id="w2l" action="https://test.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8" method="POST" novalidate>
       <!-- REQUIRED -->
       <input type="hidden" name="oid" value="00DPv00000AnTB6" />
@@ -82,11 +82,26 @@
           </div>
         </div>
 
+        <div class="grid two" style="margin-top:8px">
+          <div>
+            <label for="annual_consumption" class="req">Renewal Estimated Annual Consumption (kWh)</label>
+            <input id="annual_consumption" name="00N_ANNUAL_CONSUMPTION_ID" type="number" inputmode="numeric" step="1" min="1" required />
+            <div class="help">Must be greater than 50,000.</div>
+            <div class="error" data-error-for="annual_consumption"></div>
+          </div>
+
+          <div>
+            <label for="sites_qty" class="req">How many sites would you like a quote for</label>
+            <input id="sites_qty" name="00N_SITES_QTY_ID" type="number" inputmode="numeric" step="1" min="1" required />
+            <div class="error" data-error-for="sites_qty"></div>
+          </div>
+        </div>
+
         <div style="margin-top:8px">
-          <label for="annual_consumption" class="req">Renewal Estimated Annual Consumption (kWh)</label>
-          <input id="annual_consumption" name="00N_ANNUAL_CONSUMPTION_ID" type="number" inputmode="numeric" step="1" min="1" required />
-          <div class="help">Must be greater than 50,000.</div>
-          <div class="error" data-error-for="annual_consumption"></div>
+          <label for="contract_end" class="req">Contract end date</label>
+          <!-- Date fields submit as YYYY-MM-DD strings; Salesforce Web-to-Lead accepts this -->
+          <input id="contract_end" name="00N_CONTRACT_END_DATE_ID" type="date" required />
+          <div class="error" data-error-for="contract_end"></div>
         </div>
 
         <div class="buttons">
@@ -98,8 +113,9 @@
       <section class="step" id="step2" aria-hidden="true">
         <div class="grid two">
           <div>
-            <label for="first_name">First Name</label>
-            <input id="first_name" name="first_name" maxlength="40" type="text" />
+            <label for="first_name" class="req">First Name</label>
+            <input id="first_name" name="first_name" maxlength="40" type="text" required />
+            <div class="error" data-error-for="first_name"></div>
           </div>
           <div>
             <label for="last_name" class="req">Last Name</label>
@@ -110,13 +126,13 @@
 
         <div class="grid two">
           <div>
-            <label for="phone">Telephone Number</label>
-            <input id="phone" name="phone" maxlength="40" type="tel" pattern="^[0-9 +()\\-]{7,}$" />
+            <label for="phone" class="req">Telephone Number</label>
+            <input id="phone" name="phone" maxlength="40" type="tel" required pattern="^[0-9 +()\\-]{7,}$" />
             <div class="error" data-error-for="phone"></div>
           </div>
           <div>
-            <label for="email">Email Address</label>
-            <input id="email" name="email" maxlength="80" type="email" />
+            <label for="email" class="req">Email Address</label>
+            <input id="email" name="email" maxlength="80" type="email" required />
             <div class="error" data-error-for="email"></div>
           </div>
         </div>
@@ -129,29 +145,33 @@
 
         <div class="grid two">
           <div>
-            <label for="company_reg">Company Registration Number</label>
-            <input id="company_reg" name="00N_COMPANY_REG_ID" type="text" maxlength="50" />
+            <label for="company_reg" class="req">Company Registration Number</label>
+            <input id="company_reg" name="00N_COMPANY_REG_ID" type="text" maxlength="50" required />
+            <div class="error" data-error-for="company_reg"></div>
           </div>
           <div>
-            <label for="business_sector">Business Sector</label>
-            <select id="business_sector" name="00N_BUSINESS_SECTOR_ID">
+            <label for="business_sector" class="req">Business Sector</label>
+            <select id="business_sector" name="00N_BUSINESS_SECTOR_ID" required>
               <option value="">— Select —</option>
-              <option>Manufacturing</option><option>Retail</option><option>Hospitality</option>
-              <option>Healthcare</option><option>Education</option><option>Transportation & Logistics</option>
-              <option>Construction</option><option>Professional Services</option><option>Public Sector</option>
-              <option>Agriculture</option><option>Technology</option><option>Utilities & Energy</option>
-              <option>Real Estate</option><option>Nonprofit</option><option>Other</option>
+              <option>Agriculture, Forestry, Mining</option><option>Manufacturing, Construction</option><option>Energy, Utilities</option>
+              <option>Transport, Logistics, Storage</option><option>Data Infastructure, Telecom</option><option>Media, Creative Industries</option>
+              <option>Real Estate, Housing</option><option>Financial Services, Banking</option><option>Professional Services (Law, Consulting, Cleaning, etc.)</option>
+              <option>Entertainment, Recreation</option><option>Retail, Wholesale, Trade</option><option>Hospitality, Food, Leisure Travel</option>
+              <option>Healthcare, Social Work</option><option>Education</option><option>Public Service, Social Service</option>
+              <option>Other</option>
             </select>
+            <div class="error" data-error-for="business_sector"></div>
           </div>
         </div>
 
         <div>
-          <label for="trading_type">Trading Type</label>
-          <select id="trading_type" name="00N_TRADING_TYPE_ID">
+          <label for="trading_type" class="req">Trading Type</label>
+          <select id="trading_type" name="00N_TRADING_TYPE_ID" required>
             <option value="">— Select —</option>
-            <option>Fixed</option><option>Flexible</option><option>Pass-Through</option>
-            <option>Basket</option><option>Portfolio</option><option>Other</option>
+            <option>Limited</option><option>Sole Trader</option><option>Non Limited</option>
+            <option>Charity</option><option>Public Sector</option><option>Other</option>
           </select>
+          <div class="error" data-error-for="trading_type"></div>
         </div>
 
         <!-- Debug during testing -->
@@ -183,37 +203,71 @@
 
     function validateStep1(){
       let ok = true;
+
+      // Radios
       const ec = [...document.querySelectorAll('input[name="00N_EXISTING_CUSTOMER_ID"]')];
       if (!ec.some(r=>r.checked)){ setError('00N_EXISTING_CUSTOMER_ID','Please choose Yes or No.'); ok=false; } else setError('00N_EXISTING_CUSTOMER_ID','');
+
       const sp = [...document.querySelectorAll('input[name="00N_SUSTAINABLE_PRODUCTS_ID"]')];
       if (!sp.some(r=>r.checked)){ setError('00N_SUSTAINABLE_PRODUCTS_ID','Please choose Yes or No.'); ok=false; } else setError('00N_SUSTAINABLE_PRODUCTS_ID','');
+
+      // Interested service (picklist)
       const isel = document.getElementById('interested_service');
       if (!isel.value){ setError('interested_service','Please select a service.'); ok=false; } else setError('interested_service','');
+
+      // Annual consumption > 50,000
       const annual = document.getElementById('annual_consumption');
       const n = Number(annual.value);
       if (!annual.value || !Number.isFinite(n)){ setError('annual_consumption','Enter a number.'); ok=false; }
       else if (n <= 50000){ setError('annual_consumption','Must be greater than 50,000.'); ok=false; }
       else setError('annual_consumption','');
+
+      // Sites qty >= 1
+      const sites = document.getElementById('sites_qty');
+      const sq = Number(sites.value);
+      if (!sites.value || !Number.isFinite(sq)){ setError('sites_qty','Enter a number.'); ok=false; }
+      else if (sq < 1){ setError('sites_qty','Must be at least 1.'); ok=false; }
+      else setError('sites_qty','');
+
+      // Contract end date present
+      const ced = document.getElementById('contract_end');
+      if (!ced.value){ setError('contract_end','Please select a date.'); ok=false; } else setError('contract_end','');
+
       return ok;
     }
 
     function validateStep2(){
       let ok = true;
-      const last = document.getElementById('last_name');
+
+      const fn = document.getElementById('first_name');
+      const ln = document.getElementById('last_name');
       const comp = document.getElementById('company');
       const email = document.getElementById('email');
       const phone = document.getElementById('phone');
+      const reg = document.getElementById('company_reg');
+      const sector = document.getElementById('business_sector');
+      const trading = document.getElementById('trading_type');
 
-      if (!last.value.trim()){ setError('last_name','Last Name is required.'); ok=false; } else setError('last_name','');
+      if (!fn.value.trim()){ setError('first_name','First Name is required.'); ok=false; } else setError('first_name','');
+      if (!ln.value.trim()){ setError('last_name','Last Name is required.'); ok=false; } else setError('last_name','');
       if (!comp.value.trim()){ setError('company','Company is required.'); ok=false; } else setError('company','');
-      if (email.value && !email.checkValidity()){ setError('email','Enter a valid email.'); ok=false; } else setError('email','');
-      if (phone.value && !phone.checkValidity()){ setError('phone','Enter a valid phone number.'); ok=false; } else setError('phone','');
+
+      if (!email.value.trim()){ setError('email','Email is required.'); ok=false; }
+      else if (!email.checkValidity()){ setError('email','Enter a valid email.'); ok=false; } else setError('email','');
+
+      if (!phone.value.trim()){ setError('phone','Phone is required.'); ok=false; }
+      else if (!phone.checkValidity()){ setError('phone','Enter a valid phone number.'); ok=false; } else setError('phone','');
+
+      if (!reg.value.trim()){ setError('company_reg','Company Registration Number is required.'); ok=false; } else setError('company_reg','');
+
+      if (!sector.value){ setError('business_sector','Please select a sector.'); ok=false; } else setError('business_sector','');
+      if (!trading.value){ setError('trading_type','Please select a trading type.'); ok=false; } else setError('trading_type','');
+
       return ok;
     }
 
     document.getElementById('next1').addEventListener('click', ()=>{ if (validateStep1()) show(1); });
     document.getElementById('back2').addEventListener('click', ()=> show(0));
-
     form.addEventListener('submit', (e)=>{ if (!validateStep2()) e.preventDefault(); });
   </script>
 </body>
