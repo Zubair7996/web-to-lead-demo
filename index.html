@@ -1,6 +1,220 @@
 <!doctype html>
-<html>
-  <head>
-    
-  </head>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Web-to-Lead (Sandbox, 2-step)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <style>
+    :root{--brand:#0176d3;--ink:#1f1f1f;--muted:#6b7280;--bg:#fff;--panel:#f7f7f8}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--panel);color:var(--ink)}
+    .wrap{max-width:760px;margin:6vh auto;padding:24px;background:var(--bg);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.06)}
+    h1{margin:.2rem 0 .6rem}
+    .progress{color:var(--muted);margin:0 0 16px}
+    .grid{display:grid;gap:14px}
+    @media(min-width:640px){.two{grid-template-columns:1fr 1fr}}
+    label{display:block;margin-bottom:6px}
+    .req::after{content:" *";color:#e11d48}
+    input,select,textarea{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;background:#fff}
+    input:focus,select:focus,textarea:focus{outline:0;border-color:var(--brand);box-shadow:0 0 0 3px rgba(1,118,211,.15)}
+    fieldset{border:1px solid #e5e7eb;border-radius:10px;padding:12px}
+    legend{padding:0 6px;color:#374151}
+    .radio-row{display:flex;gap:18px;flex-wrap:wrap}
+    .buttons{display:flex;gap:10px;margin-top:8px}
+    .btn{appearance:none;border:0;border-radius:8px;padding:12px 16px;cursor:pointer}
+    .btn-primary{background:var(--brand);color:#fff;font-weight:600}
+    .btn-secondary{background:#eef2f7}
+    .error{color:#b91c1c;font-size:.9rem;margin-top:4px}
+    .help{color:var(--muted);font-size:.9rem;margin-top:4px}
+    .step{display:none}
+    .step[aria-hidden="false"]{display:block}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Contact sales</h1>
+    <p class="progress" id="progress">Step 1 of 2</p>
+
+    <!-- SANDBOX endpoint (use production only when you go live) -->
+    <form id="w2l" action="https://test.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8" method="POST" novalidate>
+      <!-- REQUIRED -->
+      <input type="hidden" name="oid" value="00DPv00000AnTB6" />
+      <input type="hidden" name="retURL" value="https://<your-user>.github.io/<your-repo>/thankyou.html" />
+
+      <!-- Optional routing/attribution -->
+      <input type="hidden" name="lead_source" value="Website" />
+      <!-- <input type="hidden" name="campaign_id" value="701XXXXXXXXXXXXXXX" /> -->
+      <!-- <input type="hidden" name="recordType"  value="012XXXXXXXXXXXXXXX" /> -->
+
+      <!-- ===== STEP 1 ===== -->
+      <section class="step" id="step1" aria-hidden="false">
+        <fieldset>
+          <legend class="req">Existing Customer</legend>
+          <div class="radio-row">
+            <label><input type="radio" name="00N_EXISTING_CUSTOMER_ID" value="Yes" required> Yes</label>
+            <label><input type="radio" name="00N_EXISTING_CUSTOMER_ID" value="No"  required> No</label>
+          </div>
+          <div class="error" data-error-for="00N_EXISTING_CUSTOMER_ID"></div>
+        </fieldset>
+
+        <div class="grid two" style="margin-top:8px">
+          <div>
+            <label for="interested_service" class="req">Interested Service</label>
+            <select id="interested_service" name="00N_INTERESTED_SERVICE_ID" required>
+              <option value="">— Select —</option>
+              <option>Gas</option>
+              <option>Electricity</option>
+              <option>Both</option>
+            </select>
+            <div class="error" data-error-for="interested_service"></div>
+          </div>
+
+          <div>
+            <fieldset>
+              <legend class="req">Sustainable Products Interest</legend>
+              <div class="radio-row">
+                <label><input type="radio" name="00N_SUSTAINABLE_PRODUCTS_ID" value="Yes" required> Yes</label>
+                <label><input type="radio" name="00N_SUSTAINABLE_PRODUCTS_ID" value="No"  required> No</label>
+              </div>
+              <div class="error" data-error-for="00N_SUSTAINABLE_PRODUCTS_ID"></div>
+            </fieldset>
+          </div>
+        </div>
+
+        <div style="margin-top:8px">
+          <label for="annual_consumption" class="req">Renewal Estimated Annual Consumption (kWh)</label>
+          <input id="annual_consumption" name="00N_ANNUAL_CONSUMPTION_ID" type="number" inputmode="numeric" step="1" min="1" required />
+          <div class="help">Must be greater than 50,000.</div>
+          <div class="error" data-error-for="annual_consumption"></div>
+        </div>
+
+        <div class="buttons">
+          <button type="button" class="btn btn-primary" id="next1">Next</button>
+        </div>
+      </section>
+
+      <!-- ===== STEP 2 ===== -->
+      <section class="step" id="step2" aria-hidden="true">
+        <div class="grid two">
+          <div>
+            <label for="first_name">First Name</label>
+            <input id="first_name" name="first_name" maxlength="40" type="text" />
+          </div>
+          <div>
+            <label for="last_name" class="req">Last Name</label>
+            <input id="last_name" name="last_name" maxlength="80" type="text" required />
+            <div class="error" data-error-for="last_name"></div>
+          </div>
+        </div>
+
+        <div class="grid two">
+          <div>
+            <label for="phone">Telephone Number</label>
+            <input id="phone" name="phone" maxlength="40" type="tel" pattern="^[0-9 +()\\-]{7,}$" />
+            <div class="error" data-error-for="phone"></div>
+          </div>
+          <div>
+            <label for="email">Email Address</label>
+            <input id="email" name="email" maxlength="80" type="email" />
+            <div class="error" data-error-for="email"></div>
+          </div>
+        </div>
+
+        <div>
+          <label for="company" class="req">Business / Company Name</label>
+          <input id="company" name="company" maxlength="255" type="text" required />
+          <div class="error" data-error-for="company"></div>
+        </div>
+
+        <div class="grid two">
+          <div>
+            <label for="company_reg">Company Registration Number</label>
+            <input id="company_reg" name="00N_COMPANY_REG_ID" type="text" maxlength="50" />
+          </div>
+          <div>
+            <label for="business_sector">Business Sector</label>
+            <select id="business_sector" name="00N_BUSINESS_SECTOR_ID">
+              <option value="">— Select —</option>
+              <option>Manufacturing</option><option>Retail</option><option>Hospitality</option>
+              <option>Healthcare</option><option>Education</option><option>Transportation & Logistics</option>
+              <option>Construction</option><option>Professional Services</option><option>Public Sector</option>
+              <option>Agriculture</option><option>Technology</option><option>Utilities & Energy</option>
+              <option>Real Estate</option><option>Nonprofit</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label for="trading_type">Trading Type</label>
+          <select id="trading_type" name="00N_TRADING_TYPE_ID">
+            <option value="">— Select —</option>
+            <option>Fixed</option><option>Flexible</option><option>Pass-Through</option>
+            <option>Basket</option><option>Portfolio</option><option>Other</option>
+          </select>
+        </div>
+
+        <!-- Debug during testing -->
+        <input type="hidden" name="debug" value="1" />
+        <input type="hidden" name="debugEmail" value="you@example.com" />
+
+        <div class="buttons">
+          <button type="button" class="btn btn-secondary" id="back2">Back</button>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </section>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('w2l');
+    const steps = [document.getElementById('step1'), document.getElementById('step2')];
+    const progress = document.getElementById('progress');
+
+    function show(i){
+      steps.forEach((s,idx)=> s.setAttribute('aria-hidden', idx===i ? 'false':'true'));
+      progress.textContent = `Step ${i+1} of ${steps.length}`;
+    }
+
+    function setError(forKey, msg){
+      const errEl = document.querySelector(`.error[data-error-for="${forKey}"]`);
+      if (errEl) errEl.textContent = msg || '';
+    }
+
+    function validateStep1(){
+      let ok = true;
+      const ec = [...document.querySelectorAll('input[name="00N_EXISTING_CUSTOMER_ID"]')];
+      if (!ec.some(r=>r.checked)){ setError('00N_EXISTING_CUSTOMER_ID','Please choose Yes or No.'); ok=false; } else setError('00N_EXISTING_CUSTOMER_ID','');
+      const sp = [...document.querySelectorAll('input[name="00N_SUSTAINABLE_PRODUCTS_ID"]')];
+      if (!sp.some(r=>r.checked)){ setError('00N_SUSTAINABLE_PRODUCTS_ID','Please choose Yes or No.'); ok=false; } else setError('00N_SUSTAINABLE_PRODUCTS_ID','');
+      const isel = document.getElementById('interested_service');
+      if (!isel.value){ setError('interested_service','Please select a service.'); ok=false; } else setError('interested_service','');
+      const annual = document.getElementById('annual_consumption');
+      const n = Number(annual.value);
+      if (!annual.value || !Number.isFinite(n)){ setError('annual_consumption','Enter a number.'); ok=false; }
+      else if (n <= 50000){ setError('annual_consumption','Must be greater than 50,000.'); ok=false; }
+      else setError('annual_consumption','');
+      return ok;
+    }
+
+    function validateStep2(){
+      let ok = true;
+      const last = document.getElementById('last_name');
+      const comp = document.getElementById('company');
+      const email = document.getElementById('email');
+      const phone = document.getElementById('phone');
+
+      if (!last.value.trim()){ setError('last_name','Last Name is required.'); ok=false; } else setError('last_name','');
+      if (!comp.value.trim()){ setError('company','Company is required.'); ok=false; } else setError('company','');
+      if (email.value && !email.checkValidity()){ setError('email','Enter a valid email.'); ok=false; } else setError('email','');
+      if (phone.value && !phone.checkValidity()){ setError('phone','Enter a valid phone number.'); ok=false; } else setError('phone','');
+      return ok;
+    }
+
+    document.getElementById('next1').addEventListener('click', ()=>{ if (validateStep1()) show(1); });
+    document.getElementById('back2').addEventListener('click', ()=> show(0));
+
+    form.addEventListener('submit', (e)=>{ if (!validateStep2()) e.preventDefault(); });
+  </script>
+</body>
 </html>
