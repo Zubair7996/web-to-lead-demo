@@ -49,19 +49,14 @@
 
       <!-- ===== STEP 1 ===== -->
       <section class="step" id="step1" aria-hidden="false">
-        <fieldset>
-          <legend class="req">Existing Customer</legend>
-          <div class="radio-row">
-            <label><input type="radio" name="00N_EXISTING_CUSTOMER_ID" value="Yes" required> Yes</label>
-            <label><input type="radio" name="00N_EXISTING_CUSTOMER_ID" value="No"  required> No</label>
-          </div>
-          <div class="error" data-error-for="00N_EXISTING_CUSTOMER_ID"></div>
-        </fieldset>
 
-        <div class="grid two" style="margin-top:8px">
+        <!-- Existing Customer (logic only later) – no field posted now -->
+
+        <div class="grid two">
           <div>
             <label for="interested_service" class="req">Interested Service</label>
-            <select id="interested_service" name="00N_INTERESTED_SERVICE_ID" required>
+            <!-- 00N: 00NPz000007PzFk -->
+            <select id="interested_service" name="00NPz000007PzFk" required>
               <option value="">— Select —</option>
               <option>Gas</option>
               <option>Electricity</option>
@@ -71,36 +66,42 @@
           </div>
 
           <div>
+            <!-- Sustainable Products Interest: checkbox field, with radios UI -->
             <fieldset>
               <legend class="req">Sustainable Products Interest</legend>
               <div class="radio-row">
-                <label><input type="radio" name="00N_SUSTAINABLE_PRODUCTS_ID" value="Yes" required> Yes</label>
-                <label><input type="radio" name="00N_SUSTAINABLE_PRODUCTS_ID" value="No"  required> No</label>
+                <label><input type="radio" name="sust_tmp" value="Yes" required> Yes</label>
+                <label><input type="radio" name="sust_tmp" value="No"  required> No</label>
               </div>
-              <div class="error" data-error-for="00N_SUSTAINABLE_PRODUCTS_ID"></div>
+              <div class="error" data-error-for="sust_tmp"></div>
             </fieldset>
+            <!-- Hidden actual 00N checkbox field -->
+            <!-- 00N: 00NPv00000AolM9 -->
+            <input type="hidden" id="sust_hidden" name="00NPv00000AolM9" />
           </div>
         </div>
 
         <div class="grid two" style="margin-top:8px">
           <div>
             <label for="annual_consumption" class="req">Renewal Estimated Annual Consumption (kWh)</label>
-            <input id="annual_consumption" name="00N_ANNUAL_CONSUMPTION_ID" type="number" inputmode="numeric" step="1" min="1" required />
+            <!-- 00N: 00NPv00000Aonqz -->
+            <input id="annual_consumption" name="00NPv00000Aonqz" type="number" inputmode="numeric" step="1" min="50001" required />
             <div class="help">Must be greater than 50,000.</div>
             <div class="error" data-error-for="annual_consumption"></div>
           </div>
 
           <div>
             <label for="sites_qty" class="req">How many sites would you like a quote for</label>
-            <input id="sites_qty" name="00N_SITES_QTY_ID" type="number" inputmode="numeric" step="1" min="1" required />
+            <!-- 00N: 00NJ7000000qVJU -->
+            <input id="sites_qty" name="00NJ7000000qVJU" type="number" inputmode="numeric" step="1" min="1" required />
             <div class="error" data-error-for="sites_qty"></div>
           </div>
         </div>
 
         <div style="margin-top:8px">
           <label for="contract_end" class="req">Contract end date</label>
-          <!-- Date fields submit as YYYY-MM-DD strings; Salesforce Web-to-Lead accepts this -->
-          <input id="contract_end" name="00N_CONTRACT_END_DATE_ID" type="date" required />
+          <!-- 00N: 00NPv00000AolXR -->
+          <input id="contract_end" name="00NPv00000AolXR" type="date" required />
           <div class="error" data-error-for="contract_end"></div>
         </div>
 
@@ -146,13 +147,16 @@
         <div class="grid two">
           <div>
             <label for="company_reg" class="req">Company Registration Number</label>
-            <input id="company_reg" name="00N_COMPANY_REG_ID" type="text" maxlength="50" required />
+            <!-- 00N: 00NPz000007PzGZ -->
+            <input id="company_reg" name="00NPz000007PzGZ" type="text" maxlength="50" required />
             <div class="error" data-error-for="company_reg"></div>
           </div>
           <div>
             <label for="business_sector" class="req">Business Sector</label>
-            <select id="business_sector" name="00N_BUSINESS_SECTOR_ID" required>
+            <!-- Standard Lead field: industry (no 00N) -->
+            <select id="business_sector" name="industry" required>
               <option value="">— Select —</option>
+              <!-- Ensure these values exist in your Lead.Industry picklist -->
               <option>Agriculture, Forestry, Mining</option><option>Manufacturing, Construction</option><option>Energy, Utilities</option>
               <option>Transport, Logistics, Storage</option><option>Data Infastructure, Telecom</option><option>Media, Creative Industries</option>
               <option>Real Estate, Housing</option><option>Financial Services, Banking</option><option>Professional Services (Law, Consulting, Cleaning, etc.)</option>
@@ -166,7 +170,8 @@
 
         <div>
           <label for="trading_type" class="req">Trading Type</label>
-          <select id="trading_type" name="00N_TRADING_TYPE_ID" required>
+          <!-- 00N: 00NPz000007PzFl -->
+          <select id="trading_type" name="00NPz000007PzFl" required>
             <option value="">— Select —</option>
             <option>Limited</option><option>Sole Trader</option><option>Non Limited</option>
             <option>Charity</option><option>Public Sector</option><option>Other</option>
@@ -204,16 +209,13 @@
     function validateStep1(){
       let ok = true;
 
-      // Radios
-      const ec = [...document.querySelectorAll('input[name="00N_EXISTING_CUSTOMER_ID"]')];
-      if (!ec.some(r=>r.checked)){ setError('00N_EXISTING_CUSTOMER_ID','Please choose Yes or No.'); ok=false; } else setError('00N_EXISTING_CUSTOMER_ID','');
-
-      const sp = [...document.querySelectorAll('input[name="00N_SUSTAINABLE_PRODUCTS_ID"]')];
-      if (!sp.some(r=>r.checked)){ setError('00N_SUSTAINABLE_PRODUCTS_ID','Please choose Yes or No.'); ok=false; } else setError('00N_SUSTAINABLE_PRODUCTS_ID','');
-
       // Interested service (picklist)
       const isel = document.getElementById('interested_service');
       if (!isel.value){ setError('interested_service','Please select a service.'); ok=false; } else setError('interested_service','');
+
+      // Sustainable Products Interest (radios -> checkbox field)
+      const sustChoice = document.querySelector('input[name="sust_tmp"]:checked');
+      if (!sustChoice){ setError('sust_tmp','Please choose Yes or No.'); ok=false; } else setError('sust_tmp','');
 
       // Annual consumption > 50,000
       const annual = document.getElementById('annual_consumption');
@@ -266,7 +268,14 @@
       return ok;
     }
 
-    document.getElementById('next1').addEventListener('click', ()=>{ if (validateStep1()) show(1); });
+    document.getElementById('next1').addEventListener('click', ()=>{
+      if (validateStep1()){
+        // map radios (Yes/No) -> checkbox true/false for 00NPv00000AolM9
+        const v = document.querySelector('input[name="sust_tmp"]:checked')?.value;
+        document.getElementById('sust_hidden').value = (v === 'Yes') ? 'true' : 'false';
+        show(1);
+      }
+    });
     document.getElementById('back2').addEventListener('click', ()=> show(0));
     form.addEventListener('submit', (e)=>{ if (!validateStep2()) e.preventDefault(); });
   </script>
