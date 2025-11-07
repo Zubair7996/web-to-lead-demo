@@ -44,14 +44,9 @@
 
       <!-- Optional routing/attribution -->
       <input type="hidden" name="lead_source" value="Website" />
-      <!-- <input type="hidden" name="campaign_id" value="701XXXXXXXXXXXXXXX" /> -->
-      <!-- <input type="hidden" name="recordType"  value="012XXXXXXXXXXXXXXX" /> -->
 
       <!-- ===== STEP 1 ===== -->
       <section class="step" id="step1" aria-hidden="false">
-
-        <!-- Existing Customer (logic only later) – no field posted now -->
-
         <div class="grid two">
           <div>
             <label for="interested_service" class="req">Interested Service</label>
@@ -66,7 +61,6 @@
           </div>
 
           <div>
-            <!-- Sustainable Products Interest: checkbox field, with radios UI -->
             <fieldset>
               <legend class="req">Sustainable Products Interest</legend>
               <div class="radio-row">
@@ -75,7 +69,6 @@
               </div>
               <div class="error" data-error-for="sust_tmp"></div>
             </fieldset>
-            <!-- Hidden actual 00N checkbox field -->
             <!-- 00N: 00NPv00000AolM9 -->
             <input type="hidden" id="sust_hidden" name="00NPv00000AolM9" />
           </div>
@@ -99,9 +92,22 @@
         </div>
 
         <div style="margin-top:8px">
-          <label for="contract_end" class="req">Contract end date</label>
+          <label for="contract_end_uk" class="req">Contract end date (DD/MM/YYYY)</label>
+          <!-- UK-visible control (no Salesforce name) -->
+          <input
+            id="contract_end_uk"
+            type="text"
+            inputmode="numeric"
+            placeholder="DD/MM/YYYY"
+            autocomplete="off"
+            aria-describedby="contract_end_hint"
+            required
+            pattern="^(0?[1-9]|[12][0-9]|3[01])/(0?[1-9]|1[0-2])/[0-9]{4}$"
+          />
+          <div id="contract_end_hint" class="help">Example: 05/11/2025</div>
+          <!-- Hidden field posted to Salesforce in MM/DD/YYYY -->
           <!-- 00N: 00NPv00000AolXR -->
-          <input id="contract_end" name="00NPv00000AolXR" type="date" required />
+          <input id="contract_end_hidden" type="hidden" name="00NPv00000AolXR" />
           <div class="error" data-error-for="contract_end"></div>
         </div>
 
@@ -153,10 +159,8 @@
           </div>
           <div>
             <label for="business_sector" class="req">Business Sector</label>
-            <!-- Standard Lead field: industry (no 00N) -->
             <select id="business_sector" name="industry" required>
               <option value="">— Select —</option>
-              <!-- Ensure these values exist in your Lead.Industry picklist -->
               <option>Agriculture, Forestry, Mining</option><option>Manufacturing, Construction</option><option>Energy, Utilities</option>
               <option>Transport, Logistics, Storage</option><option>Data Infastructure, Telecom</option><option>Media, Creative Industries</option>
               <option>Real Estate, Housing</option><option>Financial Services, Banking</option><option>Professional Services (Law, Consulting, Cleaning, etc.)</option>
@@ -206,34 +210,74 @@
       if (errEl) errEl.textContent = msg || '';
     }
 
+    // Strict UK date parse: "DD/MM/YYYY" -> { d, m, y } or null
+    function parseUKDate(uk){
+      const m = /^(0?[1-9]|[12][0-9]|3[01])\/(0?[1-9]|1[0-2])\/([0-9]{4})$/.exec((uk||'').trim());
+      if (!m) return null;
+      let [ , dd, mm, yyyy ] = m;
+      const d = parseInt(dd,10), mo = parseInt(mm,10), y = parseInt(yyyy,10);
+      const js = new Date(y, mo-1, d);
+      if (js.getFullYear()!==y || js.getMonth()!==mo-1 || js.getDate()!==d) return null; // WHY: catch 31/02
+      return { d, m: mo, y };
+    }
+
+    // "DD/MM/YYYY" -> "MM/DD/YYYY"
+    function ukToUS(uk){
+      const p = parseUKDate(uk);
+      if (!p) return '';
+      const mm = String(p.m).padStart(2,'0');
+      const dd = String(p.d).padStart(2,'0');
+      return `${mm}/${dd}/${p.y}`;
+    }
+
+    function syncSustainability(){
+      const v = document.querySelector('input[name="sust_tmp"]:checked')?.value;
+      document.getElementById('sust_hidden').value = (v === 'Yes') ? 'true' : 'false';
+    }
+
+    function syncContractEndHidden(){
+      const ukInput = document.getElementById('contract_end_uk');
+      const hidden = document.getElementById('contract_end_hidden');
+      hidden.value = ukToUS(ukInput.value);
+    }
+
+    function validateContractEndUK(){
+      const ukInput = document.getElementById('contract_end_uk');
+      const val = ukInput.value.trim();
+      if (!val){
+        setError('contract_end','Please enter a date (DD/MM/YYYY).');
+        return false;
+      }
+      if (!parseUKDate(val)){
+        setError('contract_end','Enter a valid date (DD/MM/YYYY).');
+        return false;
+      }
+      setError('contract_end','');
+      return true;
+    }
+
     function validateStep1(){
       let ok = true;
 
-      // Interested service (picklist)
       const isel = document.getElementById('interested_service');
       if (!isel.value){ setError('interested_service','Please select a service.'); ok=false; } else setError('interested_service','');
 
-      // Sustainable Products Interest (radios -> checkbox field)
       const sustChoice = document.querySelector('input[name="sust_tmp"]:checked');
       if (!sustChoice){ setError('sust_tmp','Please choose Yes or No.'); ok=false; } else setError('sust_tmp','');
 
-      // Annual consumption > 50,000
       const annual = document.getElementById('annual_consumption');
       const n = Number(annual.value);
       if (!annual.value || !Number.isFinite(n)){ setError('annual_consumption','Enter a number.'); ok=false; }
       else if (n <= 50000){ setError('annual_consumption','Must be greater than 50,000.'); ok=false; }
       else setError('annual_consumption','');
 
-      // Sites qty >= 1
       const sites = document.getElementById('sites_qty');
       const sq = Number(sites.value);
       if (!sites.value || !Number.isFinite(sq)){ setError('sites_qty','Enter a number.'); ok=false; }
       else if (sq < 1){ setError('sites_qty','Must be at least 1.'); ok=false; }
       else setError('sites_qty','');
 
-      // Contract end date present
-      const ced = document.getElementById('contract_end');
-      if (!ced.value){ setError('contract_end','Please select a date.'); ok=false; } else setError('contract_end','');
+      if (!validateContractEndUK()) ok = false;
 
       return ok;
     }
@@ -268,16 +312,45 @@
       return ok;
     }
 
+    // Step navigation
     document.getElementById('next1').addEventListener('click', ()=>{
       if (validateStep1()){
-        // map radios (Yes/No) -> checkbox true/false for 00NPv00000AolM9
-        const v = document.querySelector('input[name="sust_tmp"]:checked')?.value;
-        document.getElementById('sust_hidden').value = (v === 'Yes') ? 'true' : 'false';
+        syncSustainability();
+        syncContractEndHidden(); // WHY: keep hidden in sync before moving on
         show(1);
       }
     });
     document.getElementById('back2').addEventListener('click', ()=> show(0));
-    form.addEventListener('submit', (e)=>{ if (!validateStep2()) e.preventDefault(); });
+
+    // Final submit
+    form.addEventListener('submit', (e)=>{
+      if (!validateStep2()){
+        e.preventDefault();
+        return;
+      }
+      // Defensive re-sync
+      if (!validateContractEndUK()){
+        e.preventDefault();
+        show(0);
+        return;
+      }
+      syncSustainability();
+      syncContractEndHidden();
+      // Optional: block submit if conversion failed
+      if (!document.getElementById('contract_end_hidden').value){
+        e.preventDefault();
+        setError('contract_end','Enter a valid date (DD/MM/YYYY).');
+        show(0);
+      }
+    });
+
+    // UX nicety: auto-insert slashes for DD/MM/YYYY
+    document.getElementById('contract_end_uk').addEventListener('input', (e)=>{
+      const v = e.target.value.replace(/[^\d]/g,'').slice(0,8);
+      const parts = [v.slice(0,2), v.slice(2,4), v.slice(4,8)].filter(Boolean);
+      e.target.value = parts.join('/');
+      setError('contract_end',''); // clear while typing
+    });
   </script>
 </body>
 </html>
